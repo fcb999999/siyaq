@@ -351,6 +351,7 @@ body::before {
 .stage video.media { max-width: 100%; max-height: calc(100% - 96px); outline: none; }
 .stage iframe.media { width: 100%; height: 100%; border: 0; background: #fff; }
 .stage.pdf-mode { padding: 56px 0 66px; }
+.viewer.controls-off .stage.pdf-mode { padding: 0; }
 
 .doc-view {
   width: min(1000px, 92%);
@@ -386,6 +387,10 @@ body::before {
 /* مناطق النقر */
 .click-zone { position: absolute; top: 58px; bottom: 110px; width: 32%; z-index: 51; }
 .viewer.no-zones .click-zone { pointer-events: none; }
+/* لا أشرطة تحكم ⇒ لا حاجة لترك فراغ لها، فتمتد مناطق النقر لكامل الارتفاع */
+.viewer.controls-off .click-zone { top: 0; bottom: 0; }
+/* إلا مع الفيديو والصوت: يُترك أسفل الشاشة لأزرار المشغّل نفسه */
+.viewer.controls-off.av .click-zone { bottom: 110px; }
 .zone-right { inset-inline-start: auto; right: 0; }
 .zone-left { left: 0; }
 
@@ -409,6 +414,8 @@ body::before {
   background: linear-gradient(to top, rgba(0,0,0,.82), transparent);
 }
 .v-top.faded, .v-bottom.faded { opacity: 0; pointer-events: none; }
+.viewer.controls-off .v-top,
+.viewer.controls-off .v-bottom { opacity: 0 !important; pointer-events: none !important; }
 .v-top.faded { transform: translateY(-12px); }
 .v-bottom.faded { transform: translateY(12px); }
 

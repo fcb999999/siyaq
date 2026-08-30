@@ -28,6 +28,7 @@ const DEFAULTS = {
   clickMode: 'zones',
   wheel: 'nav',
   fit: 'contain',
+  controls: 'auto',   // auto | hidden
   videoStart: 'auto',   // auto | manual
   advanceOnEnd: true,
   loop: false,
@@ -568,6 +569,7 @@ async function doSave(overwrite = false) {
    ================================================================ */
 
 const stage = () => $('stage');
+let escHintShown = false;
 
 function openViewer(index = 0) {
   if (!state.items.length) return;
@@ -579,7 +581,13 @@ function openViewer(index = 0) {
   $('vSeek').max = String(state.items.length);
   S.setFullscreen(true);
   showAt(state.viewer.index);
-  armControlsHide();
+  applyViewerChrome();
+
+  // تذكير واحد في الجلسة حتى لا يعلق المستخدم بلا أي عنصر ظاهر
+  if (controlsHidden() && !escHintShown) {
+    escHintShown = true;
+    toast('للخروج من العرض اضغط Esc', 2200);
+  }
 }
 
 function closeViewer() {
@@ -624,6 +632,7 @@ function showAt(i) {
   st.className = 'stage' + (it.kind === 'pdf' ? ' pdf-mode' : '');
   state.viewer.kind = it.exists ? it.kind : 'other';
   $('viewer').classList.toggle('no-zones', it.kind === 'pdf' || it.kind === 'text');
+  $('viewer').classList.toggle('av', it.exists && (it.kind === 'video' || it.kind === 'audio'));
 
   if (!it.exists) {
     st.appendChild(fileCard(it, 'الملف غير موجود في مساره المحفوظ', true));
@@ -895,10 +904,17 @@ function toggleGrid() {
 }
 
 /* ---------------- إخفاء أشرطة التحكم ---------------- */
+function controlsHidden() { return settings.controls === 'hidden'; }
+
 function armControlsHide() {
   clearTimeout(state.viewer.hideTimer);
-  $('vTop').classList.remove('faded');
-  $('vBottom').classList.remove('faded');
+
+  // في الوضع المخفي تبقى الأشرطة مطويّة مهما تحرّكت الفأرة أو نُقر
+  const fade = controlsHidden();
+  $('vTop').classList.toggle('faded', fade);
+  $('vBottom').classList.toggle('faded', fade);
+
+  // مؤشّر الفأرة يظل يعمل كالمعتاد ليبقى النقر للتنقّل ممكناً
   $('viewer').classList.remove('cursor-hidden');
   state.viewer.hideTimer = setTimeout(() => {
     if (!state.viewer.open) return;
@@ -906,6 +922,12 @@ function armControlsHide() {
     $('vBottom').classList.add('faded');
     $('viewer').classList.add('cursor-hidden');
   }, 2600);
+}
+
+/* يُطبّق شكل العارض حسب الإعدادات — يُستدعى عند الفتح وعند تغيير الإعدادات */
+function applyViewerChrome() {
+  $('viewer').classList.toggle('controls-off', controlsHidden());
+  armControlsHide();
 }
 
 /* ================================================================
@@ -1092,6 +1114,7 @@ function fillSettingsForm() {
   $('setClickMode').value = settings.clickMode;
   $('setWheel').value = settings.wheel;
   $('setFit').value = settings.fit;
+  $('setControls').value = settings.controls;
   $('setVideoStart').value = settings.videoStart;
   $('setAdvanceOnEnd').checked = !!settings.advanceOnEnd;
   $('setLoop').checked = !!settings.loop;
@@ -1105,6 +1128,7 @@ async function saveSettingsForm() {
     clickMode: $('setClickMode').value,
     wheel: $('setWheel').value,
     fit: $('setFit').value,
+    controls: $('setControls').value,
     videoStart: $('setVideoStart').value,
     advanceOnEnd: $('setAdvanceOnEnd').checked,
     loop: $('setLoop').checked,
@@ -1114,7 +1138,10 @@ async function saveSettingsForm() {
   await S.settingsSet(settings);
   $('modalSettings').classList.add('hidden');
   toast('حُفظت الإعدادات');
-  if (state.viewer.open) showAt(state.viewer.index);
+  if (state.viewer.open) {
+    showAt(state.viewer.index);
+    applyViewerChrome();
+  }
 }
 
 

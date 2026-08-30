@@ -178,6 +178,14 @@
     </div>
 
     <div class="setting">
+      <label>أشرطة التحكم داخل العرض</label>
+      <select id="setControls" class="input">
+        <option value="auto">تظهر عند تحريك الفأرة وتختفي بعد سكونها</option>
+        <option value="hidden">مخفية نهائياً — لا تظهر أبداً، والخروج بـ Esc</option>
+      </select>
+    </div>
+
+    <div class="setting">
       <label>ملاءمة الصورة للشاشة</label>
       <select id="setFit" class="input">
         <option value="contain">احتواء كامل (بدون قص)</option>
@@ -249,6 +257,10 @@
       <tr><td>↑ / ↓</td><td>رفع / خفض صوت الفيديو</td></tr>
       <tr><td>PageUp / PageDown</td><td>السابق / التالي</td></tr>
     </table>
+    <p class="modal-sub" style="margin-top:14px">
+      إن اخترت إخفاء أشرطة التحكم نهائياً من الإعدادات، فلن تظهر بأي حركة أو نقرة،
+      ويبقى <b>Esc</b> هو طريق الخروج من العرض.
+    </p>
     <div class="modal-actions">
       <button class="btn btn-primary" id="helpClose">تمام</button>
     </div>
