@@ -8,7 +8,8 @@
     "dist": "electron-builder --win",
     "icon": "electron tools/make-icon.js",
     "ico": "electron tools/make-ico.js",
-    "shortcut": "electron tools/make-ico.js && electron tools/make-shortcut.js"
+    "shortcut": "electron tools/make-ico.js && electron tools/make-shortcut.js",
+    "postinstall": "node tools/postinstall.js"
   },
   "author": "سياق",
   "license": "MIT",

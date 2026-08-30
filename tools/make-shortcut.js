@@ -13,8 +13,8 @@ app.disableHardwareAcceleration();
 
 app.whenReady().then(() => {
   if (process.platform !== 'win32') {
-    console.error('هذه الأداة لويندوز فقط.');
-    app.exit(1);
+    console.log('هذه الأداة لويندوز فقط — تُخطّى.');
+    app.exit(0);
     return;
   }
   if (!fs.existsSync(EXE)) {
