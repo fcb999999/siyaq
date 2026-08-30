@@ -36,5 +36,14 @@
       "allowToChangeInstallationDirectory": true,
       "shortcutName": "سياق"
     }
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fcb999999/siyaq.git"
+  },
+  "homepage": "https://github.com/fcb999999/siyaq",
+  "bugs": {
+    "url": "https://github.com/fcb999999/siyaq/issues"
+  },
+  "updateBranch": "main"
 }

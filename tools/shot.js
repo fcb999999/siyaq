@@ -37,7 +37,7 @@ app.whenReady().then(async () => {
     'win-maximize': () => {},
     'win-close': () => {},
     'update-check': () => ({
-      ok: true, repo: 'madaarej/syaq', branch: 'main', method: 'git',
+      ok: true, repo: 'fcb999999/siyaq', branch: 'main', method: 'git',
       current: 'a1b2c3d4e5f6', currentShort: 'a1b2c3d',
       latest: { sha: 'f6e5d4c3b2a1', short: 'f6e5d4c',
                 date: new Date().toISOString(),
@@ -46,7 +46,7 @@ app.whenReady().then(async () => {
     }),
     'update-apply': () => ({ ok: true, changed: true, message: 'اكتمل التحديث.' }),
     'update-relaunch': () => {},
-    'app-info': () => ({ version: '1.0.0', electron: '33', method: 'git', repo: 'madaarej/syaq', branch: 'main' })
+    'app-info': () => ({ version: '1.0.0', electron: '33', method: 'git', repo: 'fcb999999/siyaq', branch: 'main' })
   };
   for (const [ch, fn] of Object.entries(stub)) ipcMain.handle(ch, (_e, ...a) => fn(...a));
 

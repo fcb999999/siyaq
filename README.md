@@ -131,8 +131,8 @@ npm run dist
 ### التثبيت على جهاز آخر
 
 ```bash
-git clone https://github.com/<حسابك>/syaq.git
-cd syaq
+git clone https://github.com/fcb999999/siyaq.git
+cd siyaq
 npm install
 npm start
 ```
