@@ -156,9 +156,7 @@ async function check() {
     } catch { /* اختياري */ }
   }
 
-  writeState({ ...readState(), lastCheck: Date.now() });
-
-  return {
+  const result = {
     ok: true,
     repo: `${info.owner}/${info.repo}`,
     branch: info.branch,
@@ -170,7 +168,14 @@ async function check() {
     available: !!current && current !== latest.sha,
     unknownLocal: !current
   };
+
+  writeState({ ...readState(), lastCheck: Date.now(), lastResult: result });
+  return result;
 }
+
+/* للفحص التلقائي: متى كان آخر اتصال، وما كانت نتيجته */
+const lastCheckAt = () => readState().lastCheck || 0;
+const lastResult = () => readState().lastResult || null;
 
 /* ---------- التحديث عبر git ---------- */
 
@@ -285,4 +290,4 @@ function relaunch() {
   app.exit(0);
 }
 
-module.exports = { check, apply, relaunch, isGitClone, resolveRepo };
+module.exports = { check, apply, relaunch, isGitClone, resolveRepo, lastCheckAt, lastResult };

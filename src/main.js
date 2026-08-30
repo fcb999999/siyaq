@@ -89,13 +89,24 @@ function createWindow() {
   });
 }
 
-/* فحص تلقائي هادئ للتحديثات (مرة كل 6 ساعات على الأكثر) */
+/* فحص تلقائي هادئ للتحديثات: مرة كل 6 ساعات على الأكثر.
+   وإن كان الفحص السابق قد وجد تحديثاً لم يُطبَّق بعد، يُذكَّر به بلا اتصال بالشبكة. */
+const AUTO_CHECK_EVERY = 6 * 60 * 60 * 1000;
+
+function notifyUpdate(res) {
+  if (res && res.ok && res.available && win && !win.isDestroyed()) {
+    win.webContents.send('update-available', res);
+  }
+}
+
 async function autoCheckUpdate() {
   try {
-    const res = await updater.check();
-    if (res.ok && res.available && win && !win.isDestroyed()) {
-      win.webContents.send('update-available', res);
+    const since = Date.now() - updater.lastCheckAt();
+    if (since < AUTO_CHECK_EVERY) {
+      notifyUpdate(updater.lastResult());
+      return;
     }
+    notifyUpdate(await updater.check());
   } catch { /* الفحص التلقائي لا يزعج المستخدم عند الفشل */ }
 }
 
