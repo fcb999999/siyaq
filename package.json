@@ -5,7 +5,7 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win",
+    "dist": "npx --yes electron-builder --win",
     "icon": "electron tools/make-icon.js",
     "ico": "electron tools/make-ico.js",
     "shortcut": "electron tools/make-ico.js && electron tools/make-shortcut.js",

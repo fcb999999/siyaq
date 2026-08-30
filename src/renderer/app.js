@@ -1173,25 +1173,32 @@ function updNote(cls, text) {
   return '<div class="upd-note ' + cls + '">' + esc(text) + '</div>';
 }
 
-function showUpdButtons({ apply = false, restart = false, recheck = true }) {
+function showUpdButtons({ apply = false, restart = false, recheck = true, download = false }) {
   $('updApply').classList.toggle('hidden', !apply);
   $('updRestart').classList.toggle('hidden', !restart);
   $('updRecheck').classList.toggle('hidden', !recheck);
+  $('updDownload').classList.toggle('hidden', !download);
 }
 
 function renderUpdate(res) {
   const body = $('updBody');
 
   if (!res || !res.ok) {
-    body.innerHTML = updNote('bad', (res && res.message) || 'تعذّر فحص التحديثات.');
-    showUpdButtons({ apply: false, restart: false });
+    const packaged = res && res.reason === 'packaged';
+    body.innerHTML = updNote(packaged ? 'warn' : 'bad',
+      (res && res.message) || 'تعذّر فحص التحديثات.');
+    showUpdButtons({ apply: false, restart: false, download: packaged && res.downloadUrl });
+    if (packaged && res.downloadUrl) $('updDownload').onclick = () => S.openUrl(res.downloadUrl);
     return;
   }
 
   let html = '';
   html += updRow('المستودع', res.repo);
   html += updRow('الفرع', res.branch, true);
-  html += updRow('طريقة التحديث', res.method === 'git' ? 'git pull' : 'تنزيل ملفات الفرع');
+  html += updRow('طريقة التحديث',
+    res.method === 'git' ? 'git pull'
+    : res.method === 'installer' ? 'تنزيل مثبِّت أحدث'
+    : 'تنزيل ملفات الفرع');
   html += updRow('نسختك الحالية', res.currentShort || 'غير معروفة', !!res.currentShort);
   html += updRow('آخر نسخة على GitHub', res.latest.short, true);
   html += updRow('تاريخ آخر تحديث', fmtDateTime(res.latest.date));

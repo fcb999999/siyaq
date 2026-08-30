@@ -59,6 +59,21 @@ function run(cmd, args, opts = {}) {
 
 const isGitClone = () => fs.existsSync(path.join(ROOT, '.git'));
 
+/* النسخة المبنيّة بمثبِّت: ملفاتها داخل app.asar فلا يمكن الكتابة فوقها،
+   ويكون التحديث بتنزيل مثبِّت أحدث من صفحة المستودع. */
+const isPackaged = () => !!app.isPackaged;
+
+/* مقارنة أرقام نسخ على هيئة 1.2.3 */
+function cmpVersion(a, b) {
+  const pa = String(a || '0').split('.').map(n => parseInt(n, 10) || 0);
+  const pb = String(b || '0').split('.').map(n => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d < 0 ? -1 : 1;
+  }
+  return 0;
+}
+
 /* ---------- تحديد المستودع ---------- */
 
 function parseGithubUrl(url) {
@@ -108,6 +123,8 @@ async function check() {
     return { ok: false, reason: 'no-repo',
       message: 'لم يُضبط مستودع GitHub بعد. اربط المجلد بمستودعك ثم أعد المحاولة.' };
   }
+
+  if (isPackaged()) return checkPackaged(info);
 
   let res;
   try {
@@ -167,6 +184,46 @@ async function check() {
     behind,
     available: !!current && current !== latest.sha,
     unknownLocal: !current
+  };
+
+  writeState({ ...readState(), lastCheck: Date.now(), lastResult: result });
+  return result;
+}
+
+/* ---------- فحص النسخة المثبَّتة (مقارنة أرقام النسخ) ---------- */
+
+async function checkPackaged(info) {
+  const raw = `https://raw.githubusercontent.com/${info.owner}/${info.repo}/${info.branch}/package.json`;
+
+  let res;
+  try {
+    res = await httpGet(raw, { headers: { 'User-Agent': 'syaq-updater' } });
+  } catch (e) {
+    return { ok: false, reason: 'network', message: 'تعذّر الاتصال بـ GitHub: ' + e.message };
+  }
+  if (!res.ok) {
+    return { ok: false, reason: 'http', message: 'تعذّرت قراءة نسخة المستودع: ' + res.status };
+  }
+
+  let remote;
+  try { remote = JSON.parse(await res.text()); }
+  catch { return { ok: false, reason: 'http', message: 'ملف package.json في المستودع غير صالح.' }; }
+
+  const current = app.getVersion();
+  const latestV = remote.version || '0.0.0';
+  const result = {
+    ok: true,
+    repo: `${info.owner}/${info.repo}`,
+    branch: info.branch,
+    method: 'installer',
+    packaged: true,
+    downloadUrl: `https://github.com/${info.owner}/${info.repo}`,
+    current,
+    currentShort: current,
+    latest: { sha: latestV, short: latestV, date: null, message: 'النسخة ' + latestV },
+    behind: null,
+    available: cmpVersion(current, latestV) < 0,
+    unknownLocal: false
   };
 
   writeState({ ...readState(), lastCheck: Date.now(), lastResult: result });
@@ -267,6 +324,15 @@ async function apply() {
     return { ok: true, changed: false, message: 'أنت على أحدث نسخة.' };
   }
 
+  /* النسخة المثبَّتة مضغوطة داخل app.asar ولا يمكن تحديث ملفاتها من داخلها،
+     فالتحديث يكون بتنزيل مثبِّت أحدث. */
+  if (isPackaged()) {
+    return { ok: false, reason: 'packaged',
+      downloadUrl: st.downloadUrl,
+      message: 'تتوفّر نسخة أحدث (' + st.latest.short + '). هذه نسخة مثبَّتة، ' +
+               'فالتحديث يكون بتنزيل المثبِّت الجديد من صفحة المستودع وتشغيله فوق الحالية.' };
+  }
+
   const r = isGitClone()
     ? await applyViaGit(info)
     : await applyViaZip(info, st.latest.sha);
@@ -290,4 +356,4 @@ function relaunch() {
   app.exit(0);
 }
 
-module.exports = { check, apply, relaunch, isGitClone, resolveRepo, lastCheckAt, lastResult };
+module.exports = { check, apply, relaunch, isGitClone, isPackaged, resolveRepo, lastCheckAt, lastResult };

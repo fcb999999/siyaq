@@ -203,6 +203,11 @@ ipcMain.handle('read-text', async (_e, p) => {
 });
 
 ipcMain.handle('open-external', async (_e, p) => { await shell.openPath(p); });
+ipcMain.handle('open-url', async (_e, u) => {
+  const s = String(u || '').toLowerCase();
+  // روابط الويب فقط — لا تُمرَّر مخططات أخرى إلى النظام
+  if (s.startsWith('https://') || s.startsWith('http://')) await shell.openExternal(u);
+});
 ipcMain.handle('show-in-folder', async (_e, p) => { shell.showItemInFolder(p); });
 
 // ================= العروض المحفوظة =================
@@ -371,7 +376,7 @@ ipcMain.handle('app-info', async () => {
   return {
     version: app.getVersion(),
     electron: process.versions.electron,
-    method: updater.isGitClone() ? 'git' : 'zip',
+    method: updater.isPackaged() ? 'installer' : (updater.isGitClone() ? 'git' : 'zip'),
     repo: repo ? `${repo.owner}/${repo.repo}` : null,
     branch: repo ? repo.branch : null
   };

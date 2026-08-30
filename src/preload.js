@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('syaq', {
   // قراءة وفتح
   readText: (p) => ipcRenderer.invoke('read-text', p),
   openExternal: (p) => ipcRenderer.invoke('open-external', p),
+  openUrl: (u) => ipcRenderer.invoke('open-url', u),
   showInFolder: (p) => ipcRenderer.invoke('show-in-folder', p),
 
   // العروض المحفوظة
