@@ -16,7 +16,16 @@ const ROOT = path.join(__dirname, '..');
 
 /* net.fetch يمر عبر شبكة Chromium فيحترم إعدادات الوكيل والشهادات،
    بخلاف fetch الخاص بـ Node الذي قد يفشل خلف بعض الشبكات. */
-const httpGet = (url, opts) => (net && net.fetch ? net.fetch(url, opts) : fetch(url, opts));
+const httpGet = (url, opts = {}) => {
+  /* بلا تخزين مؤقت: وإلا أعاد فحصٌ لاحق نتيجة قديمة من الذاكرة،
+     فيبدو البرنامج محدَّثاً وهو ليس كذلك. */
+  const o = {
+    ...opts,
+    cache: 'no-store',
+    headers: { ...(opts.headers || {}), 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+  };
+  return (net && net.fetch) ? net.fetch(url, o) : fetch(url, o);
+};
 const UA = { 'User-Agent': 'syaq-updater', 'Accept': 'application/vnd.github+json' };
 
 /* لا تُنسخ هذه المسارات عند التحديث بطريقة zip */
@@ -168,8 +177,14 @@ async function check() {
 async function applyViaGit(info) {
   const before = await localSha();
 
+  /* يُرفض التحديث عند وجود تعديل محلي، ويُرفض كذلك إن تعذّر التحقق أصلاً:
+     الأسلم ألّا نكتب فوق ملفات لا نعرف حالتها. */
   const dirty = await run('git', ['status', '--porcelain']);
-  if (dirty.ok && dirty.out) {
+  if (!dirty.ok) {
+    return { ok: false, reason: 'status',
+      message: 'تعذّر التحقق من حالة الملفات المحلية، فلم يُطبَّق التحديث احتياطاً:\n' + dirty.err };
+  }
+  if (dirty.out) {
     return { ok: false, reason: 'dirty',
       message: 'يوجد تعديل محلي غير محفوظ في ملفات البرنامج، فلم يُطبَّق التحديث حتى لا يُفقد.\n' +
                dirty.out.split('\n').slice(0, 8).join('\n') };
