@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' file: data: blob:; media-src 'self' file: data: blob:; object-src file:; frame-src file:; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+<title>سياق</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ======================= الشاشة الرئيسية ======================= -->
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <img id="brandLogo" class="brand-logo" src="../../assets/mark.svg" alt="سياق" />
+      <div class="brand-text">
+        <h1>سياق</h1>
+        <span>رتّب محتواك.. واعرضه بسياق</span>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="btn btn-ghost upd-btn" id="btnUpdate" title="تحديث البرنامج من GitHub">
+        🔄 التحديث<span id="updDot" class="upd-dot hidden"></span>
+      </button>
+      <button class="btn btn-ghost" id="btnSettings" title="الإعدادات">⚙️ الإعدادات</button>
+      <button class="btn btn-ghost" id="btnHelp" title="اختصارات لوحة المفاتيح">؟ المساعدة</button>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- ---------- الشريط الجانبي: العروض المحفوظة ---------- -->
+    <aside class="sidebar">
+      <div class="side-head">
+        <h2>العروض المحفوظة</h2>
+        <button class="icon-btn" id="btnImport" title="استيراد ملف عرض">⤓</button>
+      </div>
+      <div id="setsList" class="sets-list"></div>
+      <div class="side-foot">
+        <small id="setsHint">لم تحفظ أي عرض بعد.</small>
+      </div>
+    </aside>
+
+    <!-- ---------- القائمة الحالية ---------- -->
+    <section class="content">
+
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <button class="btn btn-primary" id="btnAddFiles">＋ إضافة ملفات</button>
+          <button class="btn" id="btnAddFolder">📁 إضافة مجلد</button>
+        </div>
+
+        <div class="toolbar-group">
+          <div class="current-set" id="currentSet"></div>
+        </div>
+
+        <div class="toolbar-group">
+          <select class="btn select" id="sortSelect" title="ترتيب تلقائي">
+            <option value="">ترتيب تلقائي…</option>
+            <option value="name">حسب الاسم</option>
+            <option value="date">حسب تاريخ التعديل</option>
+            <option value="kind">حسب النوع</option>
+            <option value="size">حسب الحجم</option>
+            <option value="reverse">عكس الترتيب الحالي</option>
+            <option value="shuffle">ترتيب عشوائي</option>
+          </select>
+          <button class="btn" id="btnSave">💾 حفظ العرض</button>
+          <button class="btn btn-danger-ghost" id="btnClear">مسح الكل</button>
+          <button class="btn btn-accent" id="btnPlay">▶ ابدأ العرض</button>
+        </div>
+      </div>
+
+      <div class="list-head">
+        <span id="countLabel">لا يوجد محتوى</span>
+        <span class="hint">اسحب الملفات وأفلتها هنا، أو اسحب البطاقات لإعادة الترتيب</span>
+      </div>
+
+      <div id="dropzone" class="dropzone">
+        <div id="itemsList" class="items"></div>
+
+        <div id="emptyState" class="empty">
+          <img id="emptyLogo" class="empty-logo" src="../../assets/mark.svg" alt="" />
+          <h3>ابدأ بإضافة محتواك</h3>
+          <p>صور، فيديو، PDF، ملفات نصية… رتّبها بالتسلسل الذي تريده ثم اعرضها بملء الشاشة دون خروج.</p>
+          <div class="empty-actions">
+            <button class="btn btn-primary" id="btnAddFiles2">＋ إضافة ملفات</button>
+            <button class="btn" id="btnAddFolder2">📁 إضافة مجلد</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>
+
+<!-- ======================= العارض (ملء الشاشة) ======================= -->
+<div id="viewer" class="viewer hidden" tabindex="-1">
+  <div id="stage" class="stage"></div>
+
+  <!-- منطقة النقر يمين/يسار -->
+  <div class="click-zone zone-right" id="zoneRight"></div>
+  <div class="click-zone zone-left" id="zoneLeft"></div>
+
+  <!-- شريط علوي -->
+  <div class="v-top" id="vTop">
+    <div class="v-title" id="vTitle"></div>
+    <div class="v-top-actions">
+      <button class="v-btn" id="vOpenExt" title="فتح بالبرنامج الافتراضي">↗</button>
+      <button class="v-btn" id="vFsToggle" title="ملء الشاشة (F)">⛶</button>
+      <button class="v-btn" id="vClose" title="إنهاء العرض (Esc)">✕</button>
+    </div>
+  </div>
+
+  <!-- شريط سفلي -->
+  <div class="v-bottom" id="vBottom">
+    <button class="v-btn" id="vPrev" title="السابق">▶</button>
+    <div class="v-counter"><span id="vIndex">0</span> / <span id="vTotal">0</span></div>
+    <input type="range" id="vSeek" class="v-seek" min="1" max="1" value="1" />
+    <button class="v-btn" id="vNext" title="التالي">◀</button>
+    <button class="v-btn" id="vGrid" title="شبكة المحتوى (G)">▦</button>
+  </div>
+
+  <!-- شبكة التنقل السريع -->
+  <div id="vGridPanel" class="grid-panel hidden"></div>
+
+  <div id="toast" class="toast hidden"></div>
+</div>
+
+<!-- ======================= النوافذ المنبثقة ======================= -->
+
+<!-- حفظ العرض -->
+<div id="modalSave" class="modal hidden">
+  <div class="modal-box">
+    <h3>حفظ العرض</h3>
+    <p class="modal-sub">يُحفظ الاسم مع ترتيب الملفات ومساراتها، وتستطيع فتحه لاحقاً كما هو.</p>
+    <input type="text" id="saveName" class="input" placeholder="اسم العرض… مثال: عرض المشروع" />
+    <div id="saveWarn" class="warn hidden"></div>
+    <div class="modal-actions">
+      <button class="btn" id="saveCancel">إلغاء</button>
+      <button class="btn" id="saveExport">تصدير كملف…</button>
+      <button class="btn btn-primary" id="saveOk">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- الإعدادات -->
+<div id="modalSettings" class="modal hidden">
+  <div class="modal-box modal-wide">
+    <h3>الإعدادات</h3>
+
+    <div class="setting">
+      <label>اتجاه التنقل بالأسهم</label>
+      <select id="setNavDir" class="input">
+        <option value="rtl">عربي (◀ يسار = التالي، ▶ يمين = السابق)</option>
+        <option value="ltr">إنجليزي (▶ يمين = التالي، ◀ يسار = السابق)</option>
+      </select>
+    </div>
+
+    <div class="setting">
+      <label>النقر بالفأرة</label>
+      <select id="setClickMode" class="input">
+        <option value="zones">نصف الشاشة: جهة التالي / جهة السابق</option>
+        <option value="advance">أي نقرة = التالي</option>
+        <option value="off">معطّل</option>
+      </select>
+    </div>
+
+    <div class="setting">
+      <label>عجلة الفأرة</label>
+      <select id="setWheel" class="input">
+        <option value="nav">تنقّل بين العناصر</option>
+        <option value="zoom">تكبير/تصغير الصورة</option>
+        <option value="off">معطّلة</option>
+      </select>
+    </div>
+
+    <div class="setting">
+      <label>ملاءمة الصورة للشاشة</label>
+      <select id="setFit" class="input">
+        <option value="contain">احتواء كامل (بدون قص)</option>
+        <option value="cover">ملء الشاشة (مع قص)</option>
+        <option value="none">الحجم الأصلي</option>
+      </select>
+    </div>
+
+    <div class="setting">
+      <label>تشغيل الفيديو والصوت عند الانتقال إليه</label>
+      <select id="setVideoStart" class="input">
+        <option value="auto">تلقائي — يبدأ من نفسه فور الوصول إليه</option>
+        <option value="manual">يدوي — أنا أضغط زر التشغيل أو مفتاح المسافة</option>
+      </select>
+    </div>
+    <div class="setting setting-row">
+      <label><input type="checkbox" id="setAdvanceOnEnd" /> الانتقال للعنصر التالي عند انتهاء الفيديو</label>
+    </div>
+    <div class="setting setting-row">
+      <label><input type="checkbox" id="setLoop" /> تدوير العرض (بعد الأخير يعود للأول)</label>
+    </div>
+    <div class="setting setting-row">
+      <label><input type="checkbox" id="setMuted" /> كتم صوت الفيديو افتراضياً</label>
+    </div>
+
+    <div class="setting">
+      <label>مدة العرض التلقائي للصور (ثانية) — صفر = معطّل</label>
+      <input type="number" id="setSlideSec" class="input" min="0" max="600" step="1" />
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" id="settingsClose">إغلاق</button>
+      <button class="btn btn-primary" id="settingsSave">حفظ الإعدادات</button>
+    </div>
+  </div>
+</div>
+
+<!-- التحديث -->
+<div id="modalUpdate" class="modal hidden">
+  <div class="modal-box modal-wide">
+    <h3>تحديث البرنامج</h3>
+    <p class="modal-sub">يقارن نسختك بآخر تحديث في مستودع GitHub، ويجلب الملفات الجديدة.</p>
+    <div id="updBody" class="upd-body"></div>
+    <div class="modal-actions">
+      <button class="btn" id="updClose">إغلاق</button>
+      <button class="btn" id="updRecheck">إعادة الفحص</button>
+      <button class="btn btn-primary hidden" id="updApply">تحديث الآن</button>
+      <button class="btn btn-accent hidden" id="updRestart">إعادة تشغيل البرنامج</button>
+    </div>
+  </div>
+</div>
+
+<!-- المساعدة -->
+<div id="modalHelp" class="modal hidden">
+  <div class="modal-box modal-wide">
+    <h3>اختصارات لوحة المفاتيح</h3>
+    <table class="keys">
+      <tr><td>◀ / ▶</td><td>التالي / السابق (حسب اتجاه التنقل في الإعدادات)</td></tr>
+      <tr><td>Space</td><td>تشغيل/إيقاف الفيديو، أو الانتقال للتالي في الصور</td></tr>
+      <tr><td>Enter</td><td>ابدأ العرض من العنصر المحدد</td></tr>
+      <tr><td>F أو F11</td><td>تبديل ملء الشاشة</td></tr>
+      <tr><td>Esc</td><td>خروج من العرض</td></tr>
+      <tr><td>Home / End</td><td>أول عنصر / آخر عنصر</td></tr>
+      <tr><td>G</td><td>عرض شبكة المحتوى للانتقال السريع</td></tr>
+      <tr><td>1…9</td><td>الانتقال إلى العنصر برقمه</td></tr>
+      <tr><td>+ / −</td><td>تكبير / تصغير الصورة</td></tr>
+      <tr><td>0</td><td>إعادة الحجم الأصلي</td></tr>
+      <tr><td>M</td><td>كتم / إلغاء كتم الصوت</td></tr>
+      <tr><td>↑ / ↓</td><td>رفع / خفض صوت الفيديو</td></tr>
+      <tr><td>PageUp / PageDown</td><td>السابق / التالي</td></tr>
+    </table>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="helpClose">تمام</button>
+    </div>
+  </div>
+</div>
+
+<!-- تأكيد عام -->
+<div id="modalConfirm" class="modal hidden">
+  <div class="modal-box">
+    <h3 id="confirmTitle">تأكيد</h3>
+    <p class="modal-sub" id="confirmText"></p>
+    <div class="modal-actions">
+      <button class="btn" id="confirmNo">إلغاء</button>
+      <button class="btn btn-primary" id="confirmYes">نعم</button>
+    </div>
+  </div>
+</div>
+
+<div id="mainToast" class="toast main-toast hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 640" width="512" height="640">
+  <defs>
+    <linearGradient id="frame" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#1fd6c4"/>
+      <stop offset="45%"  stop-color="#3d7bf0"/>
+      <stop offset="100%" stop-color="#7c5cf0"/>
+    </linearGradient>
+    <linearGradient id="orbit" gradientUnits="userSpaceOnUse" x1="96" y1="0" x2="416" y2="0">
+      <stop offset="0%"   stop-color="#1fd6c4"/>
+      <stop offset="50%"  stop-color="#5b6ef2"/>
+      <stop offset="100%" stop-color="#f59e42"/>
+    </linearGradient>
+    <linearGradient id="cTeal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2ee0cf"/>
+      <stop offset="100%" stop-color="#13a598"/>
+    </linearGradient>
+    <linearGradient id="cBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5f83f8"/>
+      <stop offset="100%" stop-color="#3550c7"/>
+    </linearGradient>
+    <linearGradient id="cOrange" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fbbf6b"/>
+      <stop offset="100%" stop-color="#ef8b2c"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="512" height="640" rx="0" fill="none"/>
+
+  <!-- العلامة -->
+  <g>
+    <rect x="86" y="112" width="340" height="196" rx="42" ry="42"
+          fill="none" stroke="url(#frame)" stroke-width="19"/>
+
+    <path d="M 96 280 C 120 352, 392 352, 416 280"
+          fill="none" stroke="url(#orbit)" stroke-width="15" stroke-linecap="round" opacity="0.95"/>
+
+    <g filter="url(#soft)">
+      <rect x="140" y="140" width="80" height="140" rx="12" fill="url(#cTeal)"/>
+      <circle cx="167" cy="176" r="12" fill="#c9fff9" opacity="0.92"/>
+      <path d="M 150 262 L 176 216 L 196 248 L 208 230 L 212 262 Z" fill="#0d5f58" opacity="0.55"/>
+
+      <rect x="222" y="132" width="82" height="156" rx="12" fill="url(#cBlue)"/>
+      <path d="M 250 180 L 288 210 L 250 240 Z" fill="#e8eefc"/>
+
+      <rect x="306" y="140" width="78" height="140" rx="12" fill="url(#cOrange)"/>
+      <path d="M 358 140 L 384 166 L 358 166 Z" fill="#0e1728" opacity="0.18"/>
+      <g fill="#8a4b12" opacity="0.55">
+        <rect x="320" y="186" width="50" height="7" rx="3.5"/>
+        <rect x="320" y="204" width="50" height="7" rx="3.5"/>
+        <rect x="320" y="222" width="50" height="7" rx="3.5"/>
+        <rect x="320" y="240" width="32" height="7" rx="3.5"/>
+      </g>
+    </g>
+
+    <path d="M 416 280 C 421 244, 412 220, 396 208"
+          fill="none" stroke="url(#orbit)" stroke-width="15" stroke-linecap="round" opacity="0.9"/>
+    <path d="M 96 280 C 91 244, 100 220, 116 208"
+          fill="none" stroke="url(#orbit)" stroke-width="15" stroke-linecap="round" opacity="0.9"/>
+
+    <circle cx="196" cy="332" r="13" fill="#1fd6c4"/>
+    <circle cx="256" cy="340" r="13" fill="#5b6ef2"/>
+    <circle cx="318" cy="332" r="13" fill="#f59e42"/>
+    <path d="M 209 332 L 243 338 M 269 339 L 305 333"
+          stroke="#5b6ef2" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
+  </g>
+
+  <!-- الاسم -->
+  <text x="256" y="500" text-anchor="middle"
+        font-family="Segoe UI, Tahoma, Arial" font-size="118" font-weight="700"
+        fill="#f2f6ff" letter-spacing="2">سياق</text>
+
+  <text x="256" y="552" text-anchor="middle"
+        font-family="Segoe UI, Tahoma, Arial" font-size="27"
+        fill="#2ee0cf" opacity="0.9">رتّب محتواك.. واعرضه بسياق</text>
+</svg>
