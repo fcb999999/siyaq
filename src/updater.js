@@ -5,7 +5,7 @@
    2) وإلا → تنزيل ملف zip من الفرع وفك ضغطه فوق ملفات البرنامج
    ================================================================ */
 
-const { app } = require('electron');
+const { app, net } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const fsp = fs.promises;
@@ -13,6 +13,10 @@ const os = require('os');
 const { execFile } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
+
+/* net.fetch يمر عبر شبكة Chromium فيحترم إعدادات الوكيل والشهادات،
+   بخلاف fetch الخاص بـ Node الذي قد يفشل خلف بعض الشبكات. */
+const httpGet = (url, opts) => (net && net.fetch ? net.fetch(url, opts) : fetch(url, opts));
 const UA = { 'User-Agent': 'syaq-updater', 'Accept': 'application/vnd.github+json' };
 
 /* لا تُنسخ هذه المسارات عند التحديث بطريقة zip */
@@ -98,11 +102,13 @@ async function check() {
 
   let res;
   try {
-    res = await fetch(
+    res = await httpGet(
       `https://api.github.com/repos/${info.owner}/${info.repo}/commits/${encodeURIComponent(info.branch)}`,
       { headers: UA });
   } catch (e) {
-    return { ok: false, reason: 'network', message: 'تعذّر الاتصال بـ GitHub: ' + e.message };
+    return { ok: false, reason: 'network',
+      message: 'تعذّر الاتصال بـ GitHub: ' + e.message +
+               (e.cause && e.cause.message ? ' — ' + e.cause.message : '') };
   }
 
   if (res.status === 404) {
@@ -131,7 +137,7 @@ async function check() {
 
   if (current && current !== latest.sha) {
     try {
-      const cmp = await fetch(
+      const cmp = await httpGet(
         `https://api.github.com/repos/${info.owner}/${info.repo}/compare/${current}...${latest.sha}`,
         { headers: UA });
       if (cmp.ok) {
@@ -197,7 +203,7 @@ async function applyViaZip(info, latestSha) {
 
   let res;
   try {
-    res = await fetch(url, { headers: { 'User-Agent': 'syaq-updater' } });
+    res = await httpGet(url, { headers: { 'User-Agent': 'syaq-updater' } });
   } catch (e) {
     return { ok: false, reason: 'network', message: 'تعذّر تنزيل التحديث: ' + e.message };
   }
