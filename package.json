@@ -37,7 +37,11 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "shortcutName": "سياق"
+      "shortcutName": "سياق",
+      "artifactName": "Syaq-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Syaq-Portable-${version}.${ext}"
     }
   },
   "repository": {
